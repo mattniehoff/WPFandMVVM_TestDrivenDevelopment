@@ -58,12 +58,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModel\NavigationViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\xunit.analyzers.0.10.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FriendStorage.Model\FriendStorage.Model.csproj">
+      <Project>{67EB7C6D-721A-4C84-991D-594BD263A0ED}</Project>
+      <Name>FriendStorage.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FriendStorage.UI\FriendStorage.UI.csproj">
+      <Project>{d32d4e43-79ca-4fd3-b920-13957f9060e7}</Project>
+      <Name>FriendStorage.UI</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
