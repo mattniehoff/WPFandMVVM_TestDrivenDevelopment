@@ -6,7 +6,8 @@ namespace FriendStorage.UI.ViewModel
   {
         public MainViewModel()
         {
-            NavigationViewModel = new NavigationViewModel();
+            // TODO: Fix this
+            // NavigationViewModel = new NavigationViewModel();
         }
 
         public NavigationViewModel NavigationViewModel { get; private set; }
