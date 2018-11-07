@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FriendStorage.Model;
 using FriendStorage.UI.Events;
 using FriendStorage.UI.ViewModel;
 using Moq;
@@ -40,7 +41,8 @@ namespace FriendStorage.UITests.ViewModel
             const int friendId = 7;
             _openFriendEditViewEvent.Publish(friendId);
 
-            Assert.Equal(1, _viewModel.FriendEditViewModels.Count);
+            // If just checking one, XUnit wants to use Assert.Single rather than Assert.Equal
+            Assert.Single(_viewModel.FriendEditViewModels);
             var friendEditVm = _viewModel.FriendEditViewModels.First();
             Assert.Equal(friendEditVm, _viewModel.SelectedFriendEditViewModel);
 
@@ -56,9 +58,31 @@ namespace FriendStorage.UITests.ViewModel
             _navigationViewModelMock.Verify(vm => vm.Load(), Times.Once);
         }
 
+        [Fact]
+        public void ShouldAddFriendEditViewModelsOnlyOnce()
+        {
+            _openFriendEditViewEvent.Publish(5);
+            _openFriendEditViewEvent.Publish(5);
+            _openFriendEditViewEvent.Publish(6);
+            _openFriendEditViewEvent.Publish(7);
+            _openFriendEditViewEvent.Publish(7);
+
+            Assert.Equal(3, _viewModel.FriendEditViewModels.Count);
+        }
+
         IFriendEditViewModel CreateFriendEditViewModel()
         {
             var friendEditViewModelMock = new Mock<IFriendEditViewModel>();
+
+            // It.IsAny says we call the Load method for any integer
+            friendEditViewModelMock.Setup(vm => vm.Load(It.IsAny<int>()))
+                .Callback<int>(friendId =>
+                {
+                    // When Load is called with an Integer, we have this Callback to create the passed in friendId
+                    friendEditViewModelMock.Setup(vm => vm.Friend)
+                    .Returns(new Friend { Id = friendId });
+                });
+
             _friendEditViewModelMocks.Add(friendEditViewModelMock);
             return friendEditViewModelMock.Object;
         }

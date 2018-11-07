@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using FriendStorage.DataAccess;
 using FriendStorage.UI.DataProvider;
 using FriendStorage.UI.Events;
@@ -47,9 +48,14 @@ namespace FriendStorage.UI.ViewModel
 
         public void OnOpenFriendEditView(int friendId)
         {
-            var friendEditVm = _friendEditVmCreator();
-            FriendEditViewModels.Add(friendEditVm);
-            friendEditVm.Load(friendId);
+            var friendEditVm = FriendEditViewModels.SingleOrDefault(vm => vm.Friend.Id == friendId);
+            if (friendEditVm == null)
+            {
+                friendEditVm = _friendEditVmCreator();
+                FriendEditViewModels.Add(friendEditVm);
+                friendEditVm.Load(friendId);
+            }
+
             SelectedFriendEditViewModel = friendEditVm;
         }
     }
