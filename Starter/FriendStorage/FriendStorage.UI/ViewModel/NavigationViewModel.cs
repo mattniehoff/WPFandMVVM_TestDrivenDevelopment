@@ -18,18 +18,18 @@ namespace FriendStorage.UI.ViewModel
 
         public NavigationViewModel(INavigationDataProvider dataProvider)
         {
-            Friends = new ObservableCollection<LookupItem>();
+            Friends = new ObservableCollection<NavigationItemViewModel>();
             _dataProvider = dataProvider;
         }
 
-        public ObservableCollection<LookupItem> Friends { get; private set; }
+        public ObservableCollection<NavigationItemViewModel> Friends { get; private set; }
 
         public void Load()
         {
             Friends.Clear();
             foreach (var friend in _dataProvider.GetAllFriends())
             {
-                Friends.Add(friend);
+                Friends.Add(new NavigationItemViewModel(friend.Id, friend.DisplayMember));
             }
         }
     }
