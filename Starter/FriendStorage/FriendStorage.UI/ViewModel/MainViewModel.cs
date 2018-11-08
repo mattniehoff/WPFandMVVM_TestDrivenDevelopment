@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using FriendStorage.DataAccess;
@@ -38,6 +38,7 @@ namespace FriendStorage.UI.ViewModel
             set
             {
                 _selectedFriendEditViewModel = value;
+                OnPropertyChanged();
             }
         }
 
