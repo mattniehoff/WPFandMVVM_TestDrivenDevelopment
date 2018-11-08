@@ -1,8 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using FriendStorage.DataAccess;
-using FriendStorage.UI.DataProvider;
 using FriendStorage.UI.Events;
 using Prism.Events;
 
@@ -15,9 +13,9 @@ namespace FriendStorage.UI.ViewModel
         private IFriendEditViewModel _selectedFriendEditViewModel;
 
         public MainViewModel(
-            INavigationViewModel navigationViewModel,
-            Func<IFriendEditViewModel> friendEditVmCreator,
-            IEventAggregator eventAggregator)
+                   INavigationViewModel navigationViewModel,
+                   Func<IFriendEditViewModel> friendEditVmCreator,
+                   IEventAggregator eventAggregator)
         {
             NavigationViewModel = navigationViewModel;
             FriendEditViewModels = new ObservableCollection<IFriendEditViewModel>();
@@ -28,6 +26,7 @@ namespace FriendStorage.UI.ViewModel
         public ObservableCollection<IFriendEditViewModel> FriendEditViewModels { get; private set; }
 
         public INavigationViewModel NavigationViewModel { get; private set; }
+
         public IFriendEditViewModel SelectedFriendEditViewModel
         {
             get

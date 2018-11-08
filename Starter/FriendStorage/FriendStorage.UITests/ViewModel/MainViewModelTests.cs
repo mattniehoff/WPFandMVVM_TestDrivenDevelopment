@@ -4,10 +4,10 @@ using System.Linq;
 using FriendStorage.Model;
 using FriendStorage.UI.Events;
 using FriendStorage.UI.ViewModel;
+using FriendStorage.UITests.Extensions;
 using Moq;
 using Prism.Events;
 using Xunit;
-using FriendStorage.UITests.Extensions;
 
 namespace FriendStorage.UITests.ViewModel
 {
@@ -51,15 +51,6 @@ namespace FriendStorage.UITests.ViewModel
         }
 
         [Fact]
-        public void ShouldCallTheLoadMethodOfTheNavigationViewModel()
-        {
-            _viewModel.Load();
-
-            // Mock that verifies a method is called once.
-            _navigationViewModelMock.Verify(vm => vm.Load(), Times.Once);
-        }
-
-        [Fact]
         public void ShouldAddFriendEditViewModelsOnlyOnce()
         {
             _openFriendEditViewEvent.Publish(5);
@@ -72,13 +63,24 @@ namespace FriendStorage.UITests.ViewModel
         }
 
         [Fact]
+        public void ShouldCallTheLoadMethodOfTheNavigationViewModel()
+        {
+            _viewModel.Load();
+
+            // Mock that verifies a method is called once.
+            _navigationViewModelMock.Verify(vm => vm.Load(), Times.Once);
+        }
+
+        [Fact]
         public void ShouldRaisePropertyChangedEventForSelectedFriendEditViewModel()
         {
             var friendEditVmMock = new Mock<IFriendEditViewModel>();
-            var fired = _viewModel.IsPropertyChangedFired(() =>
-            {
-                _viewModel.SelectedFriendEditViewModel = friendEditVmMock.Object;
-            }, nameof(_viewModel.SelectedFriendEditViewModel));
+            var fired = _viewModel.IsPropertyChangedFired(
+                            () =>
+                {
+                    _viewModel.SelectedFriendEditViewModel = friendEditVmMock.Object;
+                },
+                            nameof(_viewModel.SelectedFriendEditViewModel));
 
 
             Assert.True(fired);
@@ -90,7 +92,8 @@ namespace FriendStorage.UITests.ViewModel
 
             // It.IsAny says we call the Load method for any integer
             friendEditViewModelMock.Setup(vm => vm.Load(It.IsAny<int>()))
-                .Callback<int>(friendId =>
+            .Callback<int>(
+                friendId =>
                 {
                     // When Load is called with an Integer, we have this Callback to create the passed in friendId
                     friendEditViewModelMock.Setup(vm => vm.Friend)
