@@ -1,4 +1,5 @@
 ﻿using FriendStorage.Model;
+using FriendStorage.UI.DataProvider;
 using System;
 
 namespace FriendStorage.UI.ViewModel
@@ -12,6 +13,13 @@ namespace FriendStorage.UI.ViewModel
 
     public class FriendEditViewModel : ViewModelBase, IFriendEditViewModel
     {
+        private IFriendDataProvider @object;
+
+        public FriendEditViewModel(IFriendDataProvider @object)
+        {
+            this.@object = @object;
+        }
+
         public Friend Friend
         {
             get
