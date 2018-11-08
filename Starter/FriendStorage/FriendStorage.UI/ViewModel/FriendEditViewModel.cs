@@ -1,37 +1,43 @@
-﻿using FriendStorage.Model;
+﻿using System;
+using FriendStorage.Model;
 using FriendStorage.UI.DataProvider;
-using System;
 
 namespace FriendStorage.UI.ViewModel
 {
     public interface IFriendEditViewModel
     {
-        void Load(int friendId);
         Friend Friend { get; }
 
+        void Load(int friendId);
     }
 
     public class FriendEditViewModel : ViewModelBase, IFriendEditViewModel
     {
-        private IFriendDataProvider @object;
+        private IFriendDataProvider _dataProvider;
+        private Friend _friend;
 
-        public FriendEditViewModel(IFriendDataProvider @object)
+        public FriendEditViewModel(IFriendDataProvider dataProvider)
         {
-            this.@object = @object;
+            _dataProvider = dataProvider;
         }
 
         public Friend Friend
         {
             get
             {
-                throw new NotImplementedException();
+                return _friend;
+            }
+            private set
+            {
+                _friend = value;
+                OnPropertyChanged();
             }
         }
 
         public void Load(int friendId)
         {
-            throw new NotImplementedException();
+            var friend = _dataProvider.GetFriendById(friendId);
+            Friend = friend;
         }
-
     }
 }

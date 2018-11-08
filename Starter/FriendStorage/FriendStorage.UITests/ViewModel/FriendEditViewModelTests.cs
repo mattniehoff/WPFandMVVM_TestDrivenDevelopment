@@ -34,12 +34,14 @@ namespace FriendStorage.UITests.ViewModel
             Assert.NotNull(_viewModel.Friend);
             Assert.Equal(_friendId, _viewModel.Friend.Id);
 
+            // We should call GetFriendById once, when we call Load on the vm.
             _dataProviderMock.Verify(dp => dp.GetFriendById(_friendId), Times.Once);
         }
 
         [Fact]
         public void ShouldRaisePropertyChangedEventForFriend()
         {
+            // Assert Load fires property changed for Friend property.
             var fired = _viewModel.IsPropertyChangedFired(
                 () => _viewModel.Load(_friendId),
                 nameof(_viewModel.Friend));
