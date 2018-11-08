@@ -5,6 +5,7 @@ using FriendStorage.DataAccess;
 using FriendStorage.UI.DataProvider;
 using FriendStorage.UI.View;
 using FriendStorage.UI.ViewModel;
+using Prism.Events;
 
 namespace FriendStorage.UI.Startup
 {
@@ -14,8 +15,14 @@ namespace FriendStorage.UI.Startup
         {
             var builder = new ContainerBuilder();
 
+            builder.RegisterType<EventAggregator>()
+                .As<IEventAggregator>().SingleInstance();
+
             builder.RegisterType<MainWindow>().AsSelf();
             builder.RegisterType<MainViewModel>().AsSelf();
+
+            builder.RegisterType<FriendEditViewModel>()
+                .As<IFriendEditViewModel>();
 
             // Wherever INavigationViewModel is required, it'll use NavigationViewModel instance.
             builder.RegisterType<NavigationViewModel>()
@@ -23,6 +30,9 @@ namespace FriendStorage.UI.Startup
 
             builder.RegisterType<NavigationDataProvider>()
                 .As<INavigationDataProvider>();
+
+            builder.RegisterType<FriendDataProvider>()
+                .As<IFriendDataProvider>();
 
             builder.RegisterType<FileDataService>()
                 .As<IDataService>();
