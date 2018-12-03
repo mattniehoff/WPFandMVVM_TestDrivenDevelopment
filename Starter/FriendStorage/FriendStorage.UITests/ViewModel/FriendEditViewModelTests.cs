@@ -14,6 +14,7 @@ namespace FriendStorage.UITests.ViewModel
     public class FriendEditViewModelTests
     {
         private const int _friendId = 5;
+
         private Mock<IFriendDataProvider> _dataProviderMock;
         private FriendEditViewModel _viewModel;
 
@@ -24,6 +25,20 @@ namespace FriendStorage.UITests.ViewModel
                 .Returns(new Model.Friend { Id = _friendId, FirstName = "Matt" });
 
             _viewModel = new FriendEditViewModel(_dataProviderMock.Object);
+        }
+
+        [Fact]
+        public void ShouldDisableSaveCommandWhenFriendIsLoaded()
+        {
+            _viewModel.Load(_friendId);
+
+            Assert.False(_viewModel.SaveCommand.CanExecute(null));
+        }
+
+        [Fact]
+        public void ShouldDisableSaveCommandWithoutLoad()
+        {
+            Assert.False(_viewModel.SaveCommand.CanExecute(null));
         }
 
         [Fact]
@@ -39,6 +54,25 @@ namespace FriendStorage.UITests.ViewModel
         }
 
         [Fact]
+        public void ShouldRaiseCanExecuteChangedForSaveCommandAfterLoad()
+        {
+            var fired = false;
+            _viewModel.SaveCommand.CanExecuteChanged += (s, e) => fired = true;
+            _viewModel.Load(_friendId);
+            Assert.True(fired);
+        }
+
+        [Fact]
+        public void ShouldRaiseCanExecuteChangedForSaveCommandWhenFriendIsChanged()
+        {
+            _viewModel.Load(_friendId);
+            var fired = false;
+            _viewModel.SaveCommand.CanExecuteChanged += (s, e) => fired = true;
+            _viewModel.Friend.FirstName = "Changed";
+            Assert.True(fired);
+        }
+
+        [Fact]
         public void ShouldRaisePropertyChangedEventForFriend()
         {
             // Assert Load fires property changed for Friend property.
@@ -50,14 +84,6 @@ namespace FriendStorage.UITests.ViewModel
         }
 
         [Fact]
-        public void ShouldDisableSaveCommandWhenFriendIsLoaded()
-        {
-            _viewModel.Load(_friendId);
-
-            Assert.False(_viewModel.SaveCommand.CanExecute(null));
-        }
-
-        [Fact]
         public void ShoulEnableSaveCommandWhenFriendIsChanged()
         {
             _viewModel.Load(_friendId);
@@ -65,12 +91,6 @@ namespace FriendStorage.UITests.ViewModel
             _viewModel.Friend.FirstName = "Changed";
 
             Assert.True(_viewModel.SaveCommand.CanExecute(null));
-        }
-
-        [Fact]
-        public void ShouldDisableSaveCommandWithoutLoad()
-        {
-            Assert.False(_viewModel.SaveCommand.CanExecute(null));
         }
     }
 }

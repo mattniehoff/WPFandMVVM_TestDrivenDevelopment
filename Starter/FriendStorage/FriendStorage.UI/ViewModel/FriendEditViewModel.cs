@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows.Input;
 using FriendStorage.Model;
 using FriendStorage.UI.Command;
@@ -19,8 +20,6 @@ namespace FriendStorage.UI.ViewModel
         private IFriendDataProvider _dataProvider;
         private FriendWrapper _friend;
 
-        public ICommand SaveCommand { get; private set; }
-
         public FriendEditViewModel(IFriendDataProvider dataProvider)
         {
             _dataProvider = dataProvider;
@@ -40,20 +39,31 @@ namespace FriendStorage.UI.ViewModel
             }
         }
 
+        public ICommand SaveCommand { get; private set; }
+
         public void Load(int friendId)
         {
             var friend = _dataProvider.GetFriendById(friendId);
             Friend = new FriendWrapper(friend);
+
+            Friend.PropertyChanged += Friend_PropertyChanged;
+
+            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
         }
 
-        private void OnSaveExecute(object obj)
+        private void Friend_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            throw new NotImplementedException();
+            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
         }
 
         private bool OnSaveCanExectute(object arg)
         {
             return Friend != null && Friend.IsChanged;
+        }
+
+        private void OnSaveExecute(object obj)
+        {
+            throw new NotImplementedException();
         }
     }
 }
