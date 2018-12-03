@@ -4,7 +4,9 @@ using System.Windows.Input;
 using FriendStorage.Model;
 using FriendStorage.UI.Command;
 using FriendStorage.UI.DataProvider;
+using FriendStorage.UI.Events;
 using FriendStorage.UI.Wrapper;
+using Prism.Events;
 
 namespace FriendStorage.UI.ViewModel
 {
@@ -19,10 +21,12 @@ namespace FriendStorage.UI.ViewModel
     {
         private IFriendDataProvider _dataProvider;
         private FriendWrapper _friend;
+        IEventAggregator _eventAggregator;
 
-        public FriendEditViewModel(IFriendDataProvider dataProvider)
+        public FriendEditViewModel(IFriendDataProvider dataProvider, IEventAggregator eventAggregator)
         {
             _dataProvider = dataProvider;
+            _eventAggregator = eventAggregator;
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExectute);
         }
 
@@ -65,6 +69,7 @@ namespace FriendStorage.UI.ViewModel
         {
             _dataProvider.SaveFriend(Friend.Model);
             Friend.AcceptChanges();
+            _eventAggregator.GetEvent<FriendSavedEvent>().Publish(Friend.Model);
         }
     }
 }

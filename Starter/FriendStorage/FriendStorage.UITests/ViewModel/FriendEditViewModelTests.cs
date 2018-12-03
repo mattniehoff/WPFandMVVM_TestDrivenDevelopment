@@ -1,7 +1,9 @@
 ﻿using FriendStorage.UI.DataProvider;
+using FriendStorage.UI.Events;
 using FriendStorage.UI.ViewModel;
 using FriendStorage.UITests.Extensions;
 using Moq;
+using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,14 +19,23 @@ namespace FriendStorage.UITests.ViewModel
 
         private Mock<IFriendDataProvider> _dataProviderMock;
         private FriendEditViewModel _viewModel;
+        private Mock<FriendSavedEvent> _friendSavedEventMock;
+        Mock<IEventAggregator> _eventAggregatorMock;
 
         public FriendEditViewModelTests()
         {
+            _friendSavedEventMock = new Mock<FriendSavedEvent>();
+            _eventAggregatorMock = new Mock<IEventAggregator>();
+
+            _eventAggregatorMock.Setup(ea => ea.GetEvent<FriendSavedEvent>())
+                .Returns(_friendSavedEventMock.Object);
+
             _dataProviderMock = new Mock<IFriendDataProvider>();
             _dataProviderMock.Setup(dp => dp.GetFriendById(_friendId))
                 .Returns(new Model.Friend { Id = _friendId, FirstName = "Matt" });
 
-            _viewModel = new FriendEditViewModel(_dataProviderMock.Object);
+            _viewModel = new FriendEditViewModel(_dataProviderMock.Object,
+                _eventAggregatorMock.Object);
         }
 
         [Fact]
@@ -111,6 +122,16 @@ namespace FriendStorage.UITests.ViewModel
 
             _viewModel.SaveCommand.Execute(null);
             Assert.False(_viewModel.Friend.IsChanged);
+        }
+
+        [Fact]
+        public void ShouldPublishFriendSavedEventWhenSaveCommandIsExecuted()
+        {
+            _viewModel.Load(_friendId);
+            _viewModel.Friend.FirstName = "Changed";
+
+            _viewModel.SaveCommand.Execute(null);
+            _friendSavedEventMock.Verify(e => e.Publish(_viewModel.Friend.Model), Times.Once);
         }
     }
 }
