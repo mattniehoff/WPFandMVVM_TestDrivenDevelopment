@@ -3,12 +3,13 @@ using System.Windows.Input;
 using FriendStorage.Model;
 using FriendStorage.UI.Command;
 using FriendStorage.UI.DataProvider;
+using FriendStorage.UI.Wrapper;
 
 namespace FriendStorage.UI.ViewModel
 {
     public interface IFriendEditViewModel
     {
-        Friend Friend { get; }
+        FriendWrapper Friend { get; }
 
         void Load(int friendId);
     }
@@ -16,7 +17,7 @@ namespace FriendStorage.UI.ViewModel
     public class FriendEditViewModel : ViewModelBase, IFriendEditViewModel
     {
         private IFriendDataProvider _dataProvider;
-        private Friend _friend;
+        private FriendWrapper _friend;
 
         public ICommand SaveCommand { get; private set; }
 
@@ -26,7 +27,7 @@ namespace FriendStorage.UI.ViewModel
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExectute);
         }
 
-        public Friend Friend
+        public FriendWrapper Friend
         {
             get
             {
@@ -42,7 +43,7 @@ namespace FriendStorage.UI.ViewModel
         public void Load(int friendId)
         {
             var friend = _dataProvider.GetFriendById(friendId);
-            Friend = friend;
+            Friend = new FriendWrapper(friend);
         }
 
         private void OnSaveExecute(object obj)
@@ -52,7 +53,7 @@ namespace FriendStorage.UI.ViewModel
 
         private bool OnSaveCanExectute(object arg)
         {
-            return false;
+            return Friend != null && Friend.IsChanged;
         }
     }
 }
