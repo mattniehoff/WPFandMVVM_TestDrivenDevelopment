@@ -19,7 +19,7 @@ namespace FriendStorage.UI.ViewModel
             _eventAggregator = eventAggregator;
         }
 
-        public string DisplayMember { get; private set; }
+        public string DisplayMember { get; set; }
 
         public int Id { get; private set; }
 
