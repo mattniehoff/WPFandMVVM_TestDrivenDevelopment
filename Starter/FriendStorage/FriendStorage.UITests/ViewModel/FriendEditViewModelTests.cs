@@ -1,7 +1,9 @@
 ﻿using FriendStorage.UI.DataProvider;
+using FriendStorage.UI.Events;
 using FriendStorage.UI.ViewModel;
 using FriendStorage.UITests.Extensions;
 using Moq;
+using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,16 +16,40 @@ namespace FriendStorage.UITests.ViewModel
     public class FriendEditViewModelTests
     {
         private const int _friendId = 5;
+
         private Mock<IFriendDataProvider> _dataProviderMock;
         private FriendEditViewModel _viewModel;
+        private Mock<FriendSavedEvent> _friendSavedEventMock;
+        Mock<IEventAggregator> _eventAggregatorMock;
 
         public FriendEditViewModelTests()
         {
+            _friendSavedEventMock = new Mock<FriendSavedEvent>();
+            _eventAggregatorMock = new Mock<IEventAggregator>();
+
+            _eventAggregatorMock.Setup(ea => ea.GetEvent<FriendSavedEvent>())
+                .Returns(_friendSavedEventMock.Object);
+
             _dataProviderMock = new Mock<IFriendDataProvider>();
             _dataProviderMock.Setup(dp => dp.GetFriendById(_friendId))
                 .Returns(new Model.Friend { Id = _friendId, FirstName = "Matt" });
 
-            _viewModel = new FriendEditViewModel(_dataProviderMock.Object);
+            _viewModel = new FriendEditViewModel(_dataProviderMock.Object,
+                _eventAggregatorMock.Object);
+        }
+
+        [Fact]
+        public void ShouldDisableSaveCommandWhenFriendIsLoaded()
+        {
+            _viewModel.Load(_friendId);
+
+            Assert.False(_viewModel.SaveCommand.CanExecute(null));
+        }
+
+        [Fact]
+        public void ShouldDisableSaveCommandWithoutLoad()
+        {
+            Assert.False(_viewModel.SaveCommand.CanExecute(null));
         }
 
         [Fact]
@@ -39,6 +65,25 @@ namespace FriendStorage.UITests.ViewModel
         }
 
         [Fact]
+        public void ShouldRaiseCanExecuteChangedForSaveCommandAfterLoad()
+        {
+            var fired = false;
+            _viewModel.SaveCommand.CanExecuteChanged += (s, e) => fired = true;
+            _viewModel.Load(_friendId);
+            Assert.True(fired);
+        }
+
+        [Fact]
+        public void ShouldRaiseCanExecuteChangedForSaveCommandWhenFriendIsChanged()
+        {
+            _viewModel.Load(_friendId);
+            var fired = false;
+            _viewModel.SaveCommand.CanExecuteChanged += (s, e) => fired = true;
+            _viewModel.Friend.FirstName = "Changed";
+            Assert.True(fired);
+        }
+
+        [Fact]
         public void ShouldRaisePropertyChangedEventForFriend()
         {
             // Assert Load fires property changed for Friend property.
@@ -47,6 +92,46 @@ namespace FriendStorage.UITests.ViewModel
                 nameof(_viewModel.Friend));
 
             Assert.True(fired);
+        }
+
+        [Fact]
+        public void ShoulEnableSaveCommandWhenFriendIsChanged()
+        {
+            _viewModel.Load(_friendId);
+
+            _viewModel.Friend.FirstName = "Changed";
+
+            Assert.True(_viewModel.SaveCommand.CanExecute(null));
+        }
+
+        [Fact]
+        public void ShouldCallSaveMethodOfDataProviderWhenSaveCommandIsExecuted()
+        {
+            _viewModel.Load(_friendId);
+            _viewModel.Friend.FirstName = "Changed";
+
+            _viewModel.SaveCommand.Execute(null);
+            _dataProviderMock.Verify(dp => dp.SaveFriend(_viewModel.Friend.Model), Times.Once);
+        }
+
+        [Fact]
+        public void ShouldAcceptChangesWhenSaveCommandIsExecuted()
+        {
+            _viewModel.Load(_friendId);
+            _viewModel.Friend.FirstName = "Changed";
+
+            _viewModel.SaveCommand.Execute(null);
+            Assert.False(_viewModel.Friend.IsChanged);
+        }
+
+        [Fact]
+        public void ShouldPublishFriendSavedEventWhenSaveCommandIsExecuted()
+        {
+            _viewModel.Load(_friendId);
+            _viewModel.Friend.FirstName = "Changed";
+
+            _viewModel.SaveCommand.Execute(null);
+            _friendSavedEventMock.Verify(e => e.Publish(_viewModel.Friend.Model), Times.Once);
         }
     }
 }

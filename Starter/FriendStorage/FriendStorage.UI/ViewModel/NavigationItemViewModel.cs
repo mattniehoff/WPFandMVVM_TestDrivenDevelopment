@@ -7,8 +7,9 @@ using Prism.Events;
 
 namespace FriendStorage.UI.ViewModel
 {
-    public class NavigationItemViewModel
+    public class NavigationItemViewModel : ViewModelBase
     {
+        private string _displayMember;
         private IEventAggregator _eventAggregator;
 
         public NavigationItemViewModel(int id, string displayMember, IEventAggregator eventAggregator)
@@ -19,7 +20,15 @@ namespace FriendStorage.UI.ViewModel
             _eventAggregator = eventAggregator;
         }
 
-        public string DisplayMember { get; private set; }
+        public string DisplayMember
+        {
+            get { return _displayMember; }
+            set
+            {
+                _displayMember = value;
+                OnPropertyChanged();
+            }
+        }
 
         public int Id { get; private set; }
 
