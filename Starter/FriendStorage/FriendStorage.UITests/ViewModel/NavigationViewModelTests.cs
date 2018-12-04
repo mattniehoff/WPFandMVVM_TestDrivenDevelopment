@@ -19,7 +19,7 @@ namespace FriendStorage.UITests.ViewModel
         public NavigationViewModelTests()
         {
             _friendSavedEvent = new FriendSavedEvent();
-         
+
             var eventAggregatorMock = new Mock<IEventAggregator>();
             eventAggregatorMock.Setup(ea => ea.GetEvent<FriendSavedEvent>())
                 .Returns(_friendSavedEvent);
@@ -79,6 +79,27 @@ namespace FriendStorage.UITests.ViewModel
                 });
 
             Assert.Equal("Anna Huber", navigationItem.DisplayMember);
+        }
+
+        [Fact]
+        public void ShouldAddNavigationItemWhenAddedFriendIsSaved()
+        {
+            _viewModel.Load();
+
+            const int newFriendId = 97;
+
+            _friendSavedEvent.Publish(new Friend
+            {
+                Id = newFriendId,
+                FirstName = "Freyja",
+                LastName = "Niehoff"
+            });
+
+            Assert.Equal(3, _viewModel.Friends.Count);
+
+            var addedItem = _viewModel.Friends.SingleOrDefault(f => f.Id == newFriendId);
+            Assert.NotNull(addedItem);
+            Assert.Equal("Freyja Niehoff", addedItem.DisplayMember);
         }
     }
 }

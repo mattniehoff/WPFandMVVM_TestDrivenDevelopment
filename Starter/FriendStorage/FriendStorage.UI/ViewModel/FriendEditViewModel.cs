@@ -14,7 +14,7 @@ namespace FriendStorage.UI.ViewModel
     {
         FriendWrapper Friend { get; }
 
-        void Load(int friendId);
+        void Load(int? friendId);
     }
 
     public class FriendEditViewModel : ViewModelBase, IFriendEditViewModel
@@ -45,9 +45,12 @@ namespace FriendStorage.UI.ViewModel
 
         public ICommand SaveCommand { get; private set; }
 
-        public void Load(int friendId)
+        public void Load(int? friendId)
         {
-            var friend = _dataProvider.GetFriendById(friendId);
+
+            var friend = friendId.HasValue
+                ? _dataProvider.GetFriendById(friendId.Value)
+                : new Friend();
             Friend = new FriendWrapper(friend);
 
             Friend.PropertyChanged += Friend_PropertyChanged;

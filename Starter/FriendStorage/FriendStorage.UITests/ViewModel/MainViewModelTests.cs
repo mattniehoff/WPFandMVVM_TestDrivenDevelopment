@@ -52,6 +52,19 @@ namespace FriendStorage.UITests.ViewModel
         }
 
         [Fact]
+        public void ShouldAddFriendEditViewModelAndLoadItWithIdNullAndSelectIt()
+        {
+            _viewModel.AddFriendCommand.Execute(null);
+
+            // If just checking one, XUnit wants to use Assert.Single rather than Assert.Equal
+            Assert.Single(_viewModel.FriendEditViewModels);
+            var friendEditVm = _viewModel.FriendEditViewModels.First();
+            Assert.Equal(friendEditVm, _viewModel.SelectedFriendEditViewModel);
+
+            _friendEditViewModelMocks.First().Verify(vm => vm.Load(null), Times.Once);
+        }
+
+        [Fact]
         public void ShouldAddFriendEditViewModelsOnlyOnce()
         {
             _openFriendEditViewEvent.Publish(5);
@@ -107,12 +120,12 @@ namespace FriendStorage.UITests.ViewModel
 
             // It.IsAny says we call the Load method for any integer
             friendEditViewModelMock.Setup(vm => vm.Load(It.IsAny<int>()))
-            .Callback<int>(
+            .Callback<int?>(
                 friendId =>
                 {
                     // When Load is called with an Integer, we have this Callback to create the passed in friendId
                     friendEditViewModelMock.Setup(vm => vm.Friend)
-                    .Returns(new FriendWrapper(new Friend { Id = friendId }));
+                    .Returns(new FriendWrapper(new Friend { Id = friendId.Value }));
                 });
 
             _friendEditViewModelMocks.Add(friendEditViewModelMock);
