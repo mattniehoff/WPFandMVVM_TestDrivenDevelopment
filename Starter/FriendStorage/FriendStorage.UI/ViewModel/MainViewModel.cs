@@ -65,17 +65,17 @@ namespace FriendStorage.UI.ViewModel
             SelectedFriendEditViewModel = friendEditVm;
         }
 
-        private void OnAddFriendExecute(object obj)
-        {
-            SelectedFriendEditViewModel = CreateAndLoadFriendEditViewModel(null);
-        }
-
         private IFriendEditViewModel CreateAndLoadFriendEditViewModel(int? friendId)
         {
             var friendEditVm = _friendEditVmCreator();
             FriendEditViewModels.Add(friendEditVm);
             friendEditVm.Load(friendId);
             return friendEditVm;
+        }
+
+        private void OnAddFriendExecute(object obj)
+        {
+            SelectedFriendEditViewModel = CreateAndLoadFriendEditViewModel(null);
         }
 
         private void OnCloseFriendTabExecute(object obj)
