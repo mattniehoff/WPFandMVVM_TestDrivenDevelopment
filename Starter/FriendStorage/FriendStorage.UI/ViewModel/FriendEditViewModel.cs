@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Windows;
 using System.Windows.Input;
 using FriendStorage.Model;
 using FriendStorage.UI.Command;
@@ -78,8 +79,13 @@ namespace FriendStorage.UI.ViewModel
 
         private void OnDeleteExecute(object obj)
         {
-            _dataProvider.DeleteFriend(Friend.Id);
-            _eventAggregator.GetEvent<FriendDeletedEvent>().Publish(Friend.Id);
+            var result = MessageBox.Show("Do you really want to delete the friend?", "Delete Friend", MessageBoxButton.YesNo);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                _dataProvider.DeleteFriend(Friend.Id);
+                _eventAggregator.GetEvent<FriendDeletedEvent>().Publish(Friend.Id);
+            }
         }
 
         private bool OnSaveCanExectute(object arg)
