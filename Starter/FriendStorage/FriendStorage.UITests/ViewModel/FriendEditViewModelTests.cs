@@ -75,6 +75,20 @@ namespace FriendStorage.UITests.ViewModel
         }
 
         [Fact]
+        public void ShouldDisableDeleteCommandForNewFriend()
+        {
+            _viewModel.Load(null);
+            Assert.False(_viewModel.DeleteCommand.CanExecute(null));
+        }
+
+
+        [Fact]
+        public void ShouldDisableDeleteCommandWithoutLoad()
+        {
+            Assert.False(_viewModel.DeleteCommand.CanExecute(null));
+        }
+
+        [Fact]
         public void ShouldDisableSaveCommandWhenFriendIsLoaded()
         {
             _viewModel.Load(_friendId);
@@ -86,6 +100,13 @@ namespace FriendStorage.UITests.ViewModel
         public void ShouldDisableSaveCommandWithoutLoad()
         {
             Assert.False(_viewModel.SaveCommand.CanExecute(null));
+        }
+
+        [Fact]
+        public void ShouldEnableDeleteCommandForExistingFriend()
+        {
+            _viewModel.Load(_friendId);
+            Assert.True(_viewModel.DeleteCommand.CanExecute(null));
         }
 
         [Fact]
@@ -148,27 +169,6 @@ namespace FriendStorage.UITests.ViewModel
             _viewModel.Friend.FirstName = "Changed";
 
             Assert.True(_viewModel.SaveCommand.CanExecute(null));
-        }
-
-        [Fact]
-        public void ShouldEnableDeleteCommandForExistingFriend()
-        {
-            _viewModel.Load(_friendId);
-            Assert.True(_viewModel.DeleteCommand.CanExecute(null));
-        }
-
-        [Fact]
-        public void ShouldDisableDeleteCommandForNewFriend()
-        {
-            _viewModel.Load(null);
-            Assert.False(_viewModel.DeleteCommand.CanExecute(null));
-        }
-
-
-        [Fact]
-        public void ShouldDisableDeleteCommandWithoutLoad()
-        {            
-            Assert.False(_viewModel.DeleteCommand.CanExecute(null));
         }
     }
 }
