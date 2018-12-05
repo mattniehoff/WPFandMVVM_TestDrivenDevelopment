@@ -1,4 +1,5 @@
 ﻿using FriendStorage.UI.DataProvider;
+using FriendStorage.UI.Dialogs;
 using FriendStorage.UI.Events;
 using FriendStorage.UI.ViewModel;
 using FriendStorage.UITests.Extensions;
@@ -18,10 +19,11 @@ namespace FriendStorage.UITests.ViewModel
         private const int _friendId = 5;
 
         private Mock<IFriendDataProvider> _dataProviderMock;
-        Mock<IEventAggregator> _eventAggregatorMock;
+        private Mock<IEventAggregator> _eventAggregatorMock;
         private Mock<FriendDeletedEvent> _friendDeletedEventMock;
         private Mock<FriendSavedEvent> _friendSavedEventMock;
         private FriendEditViewModel _viewModel;
+        private Mock<IMessageDialogService> _messageDialogServiceMock;
 
         public FriendEditViewModelTests()
         {
@@ -38,8 +40,11 @@ namespace FriendStorage.UITests.ViewModel
             _dataProviderMock.Setup(dp => dp.GetFriendById(_friendId))
                 .Returns(new Model.Friend { Id = _friendId, FirstName = "Matt" });
 
+            _messageDialogServiceMock = new Mock<IMessageDialogService>();
+
             _viewModel = new FriendEditViewModel(_dataProviderMock.Object,
-                _eventAggregatorMock.Object);
+                _eventAggregatorMock.Object,
+                _messageDialogServiceMock.Object);
         }
 
         [Fact]
@@ -52,14 +57,24 @@ namespace FriendStorage.UITests.ViewModel
             Assert.False(_viewModel.Friend.IsChanged);
         }
 
-        [Fact]
-        public void ShouldCallDeleteFriendWhenDeleteCommandIsExecuted()
+        [Theory]
+        [InlineData(MessageDialogResult.Yes, 1)]
+        [InlineData(MessageDialogResult.No, 0)]
+        public void ShouldCallDeleteFriendWhenDeleteCommandIsExecuted(
+            MessageDialogResult result, int expectedDeleteFriendCalls)
         {
             _viewModel.Load(_friendId);
 
+            _messageDialogServiceMock.Setup(ds => ds.ShowYesNoDialog(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(result);
+
             _viewModel.DeleteCommand.Execute(null);
 
-            _dataProviderMock.Verify(dp => dp.DeleteFriend(_friendId), Times.Once);
+            _dataProviderMock.Verify(dp => dp.DeleteFriend(_friendId), 
+                Times.Exactly(expectedDeleteFriendCalls));
+
+            _messageDialogServiceMock.Verify(ds => ds.ShowYesNoDialog(It.IsAny<string>(), It.IsAny<string>()), 
+                Times.Once);                
         }
 
         [Fact]
