@@ -20,15 +20,18 @@ namespace FriendStorage.UI.ViewModel
     public class FriendEditViewModel : ViewModelBase, IFriendEditViewModel
     {
         private IFriendDataProvider _dataProvider;
-        private FriendWrapper _friend;
         IEventAggregator _eventAggregator;
+        private FriendWrapper _friend;
 
         public FriendEditViewModel(IFriendDataProvider dataProvider, IEventAggregator eventAggregator)
         {
             _dataProvider = dataProvider;
             _eventAggregator = eventAggregator;
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExectute);
+            DeleteCommand = new DelegateCommand(OnDeleteExecute, OnDeleteCanExecute);
         }
+
+        public ICommand DeleteCommand { get; private set; }
 
         public FriendWrapper Friend
         {
@@ -47,7 +50,6 @@ namespace FriendStorage.UI.ViewModel
 
         public void Load(int? friendId)
         {
-
             var friend = friendId.HasValue
                 ? _dataProvider.GetFriendById(friendId.Value)
                 : new Friend();
@@ -55,12 +57,29 @@ namespace FriendStorage.UI.ViewModel
 
             Friend.PropertyChanged += Friend_PropertyChanged;
 
-            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+            InvalidateCommands();
         }
 
         private void Friend_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            InvalidateCommands();
+        }
+
+        private void InvalidateCommands()
+        {
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+            ((DelegateCommand)DeleteCommand).RaiseCanExecuteChanged();
+        }
+
+        private bool OnDeleteCanExecute(object arg)
+        {
+            return Friend != null && Friend.Id > 0;
+        }
+
+        private void OnDeleteExecute(object obj)
+        {
+            _dataProvider.DeleteFriend(Friend.Id);
+            _eventAggregator.GetEvent<FriendDeletedEvent>().Publish(Friend.Id);
         }
 
         private bool OnSaveCanExectute(object arg)

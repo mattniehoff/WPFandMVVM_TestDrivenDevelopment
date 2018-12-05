@@ -13,16 +13,20 @@ namespace FriendStorage.UITests.ViewModel
 {
     public class NavigationViewModelTests
     {
-        NavigationViewModel _viewModel;
+        FriendDeletedEvent _friendDeletedEvent;
         FriendSavedEvent _friendSavedEvent;
+        NavigationViewModel _viewModel;
 
         public NavigationViewModelTests()
         {
             _friendSavedEvent = new FriendSavedEvent();
+            _friendDeletedEvent = new FriendDeletedEvent();
 
             var eventAggregatorMock = new Mock<IEventAggregator>();
             eventAggregatorMock.Setup(ea => ea.GetEvent<FriendSavedEvent>())
                 .Returns(_friendSavedEvent);
+            eventAggregatorMock.Setup(ea => ea.GetEvent<FriendDeletedEvent>())
+                .Returns(_friendDeletedEvent);
 
 
             var navigationDataProviderMock = new Mock<INavigationDataProvider>();
@@ -34,6 +38,27 @@ namespace FriendStorage.UITests.ViewModel
                 });
 
             _viewModel = new NavigationViewModel(navigationDataProviderMock.Object, eventAggregatorMock.Object);
+        }
+
+        [Fact]
+        public void ShouldAddNavigationItemWhenAddedFriendIsSaved()
+        {
+            _viewModel.Load();
+
+            const int newFriendId = 97;
+
+            _friendSavedEvent.Publish(new Friend
+            {
+                Id = newFriendId,
+                FirstName = "Freyja",
+                LastName = "Niehoff"
+            });
+
+            Assert.Equal(3, _viewModel.Friends.Count);
+
+            var addedItem = _viewModel.Friends.SingleOrDefault(f => f.Id == newFriendId);
+            Assert.NotNull(addedItem);
+            Assert.Equal("Freyja Niehoff", addedItem.DisplayMember);
         }
 
         [Fact]
@@ -82,24 +107,21 @@ namespace FriendStorage.UITests.ViewModel
         }
 
         [Fact]
-        public void ShouldAddNavigationItemWhenAddedFriendIsSaved()
+        public void ShouldRemoveNavigationItemWhenFriendIsDeleted()
         {
             _viewModel.Load();
 
-            const int newFriendId = 97;
+            // FriendId we want to delete
+            var deletedFriendId = _viewModel.Friends.First().Id;
 
-            _friendSavedEvent.Publish(new Friend
-            {
-                Id = newFriendId,
-                FirstName = "Freyja",
-                LastName = "Niehoff"
-            });
+            _friendDeletedEvent.Publish(deletedFriendId);
 
-            Assert.Equal(3, _viewModel.Friends.Count);
 
-            var addedItem = _viewModel.Friends.SingleOrDefault(f => f.Id == newFriendId);
-            Assert.NotNull(addedItem);
-            Assert.Equal("Freyja Niehoff", addedItem.DisplayMember);
+            // Assert we have 1 friend, where we previously had 2
+            Assert.Equal(1, _viewModel.Friends.Count);
+
+            // Assert that the correct item was deleted
+            Assert.NotEqual(deletedFriendId, _viewModel.Friends.Single().Id);
         }
     }
 }

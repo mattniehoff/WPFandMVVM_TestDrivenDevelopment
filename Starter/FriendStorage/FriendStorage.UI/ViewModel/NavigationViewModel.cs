@@ -1,11 +1,10 @@
-﻿using FriendStorage.DataAccess;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using FriendStorage.Model;
 using FriendStorage.UI.DataProvider;
 using FriendStorage.UI.Events;
 using Prism.Events;
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace FriendStorage.UI.ViewModel
 {
@@ -16,17 +15,18 @@ namespace FriendStorage.UI.ViewModel
 
     public class NavigationViewModel : ViewModelBase, INavigationViewModel
     {
-
         private INavigationDataProvider _dataProvider;
         private IEventAggregator _eventAggregator;
 
-        public NavigationViewModel(INavigationDataProvider dataProvider,
-            IEventAggregator eventAggregator)
+        public NavigationViewModel(
+                   INavigationDataProvider dataProvider,
+                   IEventAggregator eventAggregator)
         {
             Friends = new ObservableCollection<NavigationItemViewModel>();
             _dataProvider = dataProvider;
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<FriendSavedEvent>().Subscribe(OnFriendSaved);
+            _eventAggregator.GetEvent<FriendDeletedEvent>().Subscribe(OnFriendDeleted);
         }
 
         public ObservableCollection<NavigationItemViewModel> Friends { get; private set; }
@@ -38,6 +38,12 @@ namespace FriendStorage.UI.ViewModel
             {
                 Friends.Add(new NavigationItemViewModel(friend.Id, friend.DisplayMember, _eventAggregator));
             }
+        }
+
+        private void OnFriendDeleted(int friendId)
+        {
+            var navigationItem = Friends.Single(f => f.Id == friendId);
+            Friends.Remove(navigationItem);
         }
 
         private void OnFriendSaved(Friend friend)
