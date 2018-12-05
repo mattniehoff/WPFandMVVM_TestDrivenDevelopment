@@ -22,8 +22,8 @@ namespace FriendStorage.UITests.ViewModel
         private Mock<IEventAggregator> _eventAggregatorMock;
         private Mock<FriendDeletedEvent> _friendDeletedEventMock;
         private Mock<FriendSavedEvent> _friendSavedEventMock;
-        private FriendEditViewModel _viewModel;
         private Mock<IMessageDialogService> _messageDialogServiceMock;
+        private FriendEditViewModel _viewModel;
 
         public FriendEditViewModelTests()
         {
@@ -70,11 +70,11 @@ namespace FriendStorage.UITests.ViewModel
 
             _viewModel.DeleteCommand.Execute(null);
 
-            _dataProviderMock.Verify(dp => dp.DeleteFriend(_friendId), 
+            _dataProviderMock.Verify(dp => dp.DeleteFriend(_friendId),
                 Times.Exactly(expectedDeleteFriendCalls));
 
-            _messageDialogServiceMock.Verify(ds => ds.ShowYesNoDialog(It.IsAny<string>(), It.IsAny<string>()), 
-                Times.Once);                
+            _messageDialogServiceMock.Verify(ds => ds.ShowYesNoDialog(It.IsAny<string>(), It.IsAny<string>()),
+                Times.Once);
         }
 
         [Fact]
@@ -129,6 +129,23 @@ namespace FriendStorage.UITests.ViewModel
         public void ShouldDisableSaveCommandWithoutLoad()
         {
             Assert.False(_viewModel.SaveCommand.CanExecute(null));
+        }
+
+        [Fact]
+        public void ShouldDisplayCorrectMessageInDeleteDialog()
+        {
+            _viewModel.Load(_friendId);
+
+            var friend = _viewModel.Friend;
+            friend.FirstName = "Matt";
+            friend.LastName = "Niehoff";
+
+            _viewModel.DeleteCommand.Execute(null);
+
+            // This will verify the dialogservice is called with exactly these parameters
+            _messageDialogServiceMock.Verify(d => d.ShowYesNoDialog("Delete Friend",
+                $"Do you really want to delete the friend '{friend.FirstName} {friend.LastName}'?"),
+                Times.Once);
         }
 
         [Fact]
