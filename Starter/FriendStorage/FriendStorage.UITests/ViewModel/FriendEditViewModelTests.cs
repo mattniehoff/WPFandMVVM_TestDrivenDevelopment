@@ -18,9 +18,9 @@ namespace FriendStorage.UITests.ViewModel
         private const int _friendId = 5;
 
         private Mock<IFriendDataProvider> _dataProviderMock;
-        private FriendEditViewModel _viewModel;
-        private Mock<FriendSavedEvent> _friendSavedEventMock;
         Mock<IEventAggregator> _eventAggregatorMock;
+        private Mock<FriendSavedEvent> _friendSavedEventMock;
+        private FriendEditViewModel _viewModel;
 
         public FriendEditViewModelTests()
         {
@@ -36,6 +36,42 @@ namespace FriendStorage.UITests.ViewModel
 
             _viewModel = new FriendEditViewModel(_dataProviderMock.Object,
                 _eventAggregatorMock.Object);
+        }
+
+        [Fact]
+        public void ShouldAcceptChangesWhenSaveCommandIsExecuted()
+        {
+            _viewModel.Load(_friendId);
+            _viewModel.Friend.FirstName = "Changed";
+
+            _viewModel.SaveCommand.Execute(null);
+            Assert.False(_viewModel.Friend.IsChanged);
+        }
+
+        [Fact]
+        public void ShouldCallSaveMethodOfDataProviderWhenSaveCommandIsExecuted()
+        {
+            _viewModel.Load(_friendId);
+            _viewModel.Friend.FirstName = "Changed";
+
+            _viewModel.SaveCommand.Execute(null);
+            _dataProviderMock.Verify(dp => dp.SaveFriend(_viewModel.Friend.Model), Times.Once);
+        }
+
+        // This should be doable in devexpress mvvm framework I would think
+        [Fact]
+        public void ShouldCreateNewFriendWhenNullIsPassedToLoadMethod()
+        {
+            _viewModel.Load(null);
+
+            Assert.NotNull(_viewModel.Friend);
+            Assert.Equal(0, _viewModel.Friend.Id);
+            Assert.Null(_viewModel.Friend.FirstName);
+            Assert.Null(_viewModel.Friend.LastName);
+            Assert.Null(_viewModel.Friend.Birthday);
+            Assert.False(_viewModel.Friend.IsDeveloper);
+
+            _dataProviderMock.Verify(dp => dp.GetFriendById(It.IsAny<int>()), Times.Never);
         }
 
         [Fact]
@@ -62,6 +98,16 @@ namespace FriendStorage.UITests.ViewModel
 
             // We should call GetFriendById once, when we call Load on the vm.
             _dataProviderMock.Verify(dp => dp.GetFriendById(_friendId), Times.Once);
+        }
+
+        [Fact]
+        public void ShouldPublishFriendSavedEventWhenSaveCommandIsExecuted()
+        {
+            _viewModel.Load(_friendId);
+            _viewModel.Friend.FirstName = "Changed";
+
+            _viewModel.SaveCommand.Execute(null);
+            _friendSavedEventMock.Verify(e => e.Publish(_viewModel.Friend.Model), Times.Once);
         }
 
         [Fact]
@@ -105,49 +151,24 @@ namespace FriendStorage.UITests.ViewModel
         }
 
         [Fact]
-        public void ShouldCallSaveMethodOfDataProviderWhenSaveCommandIsExecuted()
+        public void ShouldEnableDeleteCommandForExistingFriend()
         {
             _viewModel.Load(_friendId);
-            _viewModel.Friend.FirstName = "Changed";
-
-            _viewModel.SaveCommand.Execute(null);
-            _dataProviderMock.Verify(dp => dp.SaveFriend(_viewModel.Friend.Model), Times.Once);
+            Assert.True(_viewModel.DeleteCommand.CanExecute(null));
         }
 
         [Fact]
-        public void ShouldAcceptChangesWhenSaveCommandIsExecuted()
-        {
-            _viewModel.Load(_friendId);
-            _viewModel.Friend.FirstName = "Changed";
-
-            _viewModel.SaveCommand.Execute(null);
-            Assert.False(_viewModel.Friend.IsChanged);
-        }
-
-        [Fact]
-        public void ShouldPublishFriendSavedEventWhenSaveCommandIsExecuted()
-        {
-            _viewModel.Load(_friendId);
-            _viewModel.Friend.FirstName = "Changed";
-
-            _viewModel.SaveCommand.Execute(null);
-            _friendSavedEventMock.Verify(e => e.Publish(_viewModel.Friend.Model), Times.Once);
-        }
-
-        // This should be doable in devexpress mvvm framework I would think
-        [Fact]
-        public void ShouldCreateNewFriendWhenNullIsPassedToLoadMethod()
+        public void ShouldDisableDeleteCommandForNewFriend()
         {
             _viewModel.Load(null);
+            Assert.False(_viewModel.DeleteCommand.CanExecute(null));
+        }
 
-            Assert.NotNull(_viewModel.Friend);
-            Assert.Equal(0, _viewModel.Friend.Id);
-            Assert.Null(_viewModel.Friend.FirstName);
-            Assert.Null(_viewModel.Friend.LastName);
-            Assert.Null(_viewModel.Friend.Birthday);
-            Assert.False(_viewModel.Friend.IsDeveloper);
 
-            _dataProviderMock.Verify(dp => dp.GetFriendById(It.IsAny<int>()), Times.Never);
+        [Fact]
+        public void ShouldDisableDeleteCommandWithoutLoad()
+        {            
+            Assert.False(_viewModel.DeleteCommand.CanExecute(null));
         }
     }
 }

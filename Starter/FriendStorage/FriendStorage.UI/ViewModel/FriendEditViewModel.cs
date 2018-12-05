@@ -20,15 +20,18 @@ namespace FriendStorage.UI.ViewModel
     public class FriendEditViewModel : ViewModelBase, IFriendEditViewModel
     {
         private IFriendDataProvider _dataProvider;
-        private FriendWrapper _friend;
         IEventAggregator _eventAggregator;
+        private FriendWrapper _friend;
 
         public FriendEditViewModel(IFriendDataProvider dataProvider, IEventAggregator eventAggregator)
         {
             _dataProvider = dataProvider;
             _eventAggregator = eventAggregator;
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExectute);
+            DeleteCommand = new DelegateCommand(OnDeleteExecute, OnDeleteCanExecute);
         }
+
+        public ICommand DeleteCommand { get; private set; }
 
         public FriendWrapper Friend
         {
@@ -61,6 +64,16 @@ namespace FriendStorage.UI.ViewModel
         private void Friend_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+        }
+
+        private bool OnDeleteCanExecute(object arg)
+        {
+            return Friend != null && Friend.Id > 0;
+        }
+
+        private void OnDeleteExecute(object obj)
+        {
+            throw new NotImplementedException();
         }
 
         private bool OnSaveCanExectute(object arg)
