@@ -50,7 +50,6 @@ namespace FriendStorage.UI.ViewModel
 
         public void Load(int? friendId)
         {
-
             var friend = friendId.HasValue
                 ? _dataProvider.GetFriendById(friendId.Value)
                 : new Friend();
@@ -80,6 +79,7 @@ namespace FriendStorage.UI.ViewModel
         private void OnDeleteExecute(object obj)
         {
             _dataProvider.DeleteFriend(Friend.Id);
+            _eventAggregator.GetEvent<FriendDeletedEvent>().Publish(Friend.Id);
         }
 
         private bool OnSaveCanExectute(object arg)
